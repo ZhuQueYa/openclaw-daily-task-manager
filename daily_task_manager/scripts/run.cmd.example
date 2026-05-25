@@ -1,0 +1,8 @@
+@echo off
+rem Copy this file to run.cmd and edit ROOT / PYTHON for your machine.
+rem run.cmd is gitignored; do not commit your local paths.
+
+set "ROOT=C:\Users\YourName\daily_task_manager"
+set "PYTHON=C:\Users\YourName\.venvs\life_assistant\Scripts\python.exe"
+set "CONFIG=%ROOT%\config\paths.json"
+"%PYTHON%" "%ROOT%\app\main.py" --config "%CONFIG%" %*

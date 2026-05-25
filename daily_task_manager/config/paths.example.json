@@ -1,0 +1,19 @@
+{
+  "timezone": "Asia/Shanghai",
+  "root": "C:\\Users\\YourName\\daily_task_manager",
+  "life_dir": "C:\\Users\\YourName\\daily_task_manager\\data\\life",
+  "taie_file": "C:\\Users\\YourName\\daily_task_manager\\data\\taie\\TAIE.xmind",
+  "archive_dir": "C:\\Users\\YourName\\daily_task_manager\\data\\archive",
+  "daily_done_dir": "C:\\Users\\YourName\\daily_task_manager\\data\\archive\\daily_done",
+  "log_dir": "C:\\Users\\YourName\\daily_task_manager\\logs",
+  "backup_dir": "C:\\Users\\YourName\\daily_task_manager\\backup",
+  "timed_reminders_file": "C:\\Users\\YourName\\daily_task_manager\\data\\reminders\\timed_reminders.json",
+  "tasks_file": "C:\\Users\\YourName\\daily_task_manager\\data\\life\\TASKS.md",
+  "today_file": "C:\\Users\\YourName\\daily_task_manager\\data\\life\\TODAY.md",
+  "backlog_file": "C:\\Users\\YourName\\daily_task_manager\\data\\life\\BACKLOG.md",
+  "inbox_file": "C:\\Users\\YourName\\daily_task_manager\\data\\life\\INBOX.md",
+  "energy_log_file": "C:\\Users\\YourName\\daily_task_manager\\data\\life\\ENERGY_LOG.md",
+  "shopping_file": "C:\\Users\\YourName\\daily_task_manager\\data\\life\\SHOPPING.md",
+  "relationships_file": "C:\\Users\\YourName\\daily_task_manager\\data\\life\\RELATIONSHIPS.md",
+  "weekly_reviews_file": "C:\\Users\\YourName\\daily_task_manager\\data\\life\\WEEKLY_REVIEWS.md"
+}

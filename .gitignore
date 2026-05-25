@@ -1,0 +1,82 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.py[cod]
+*$py.class
+.Python
+*.egg-info/
+dist/
+build/
+
+# Runtime data
+daily_task_manager/data/
+daily_task_manager/logs/
+daily_task_manager/backup/
+daily_task_manager/archive/
+daily_task_manager/events/
+daily_task_manager/raw_search/
+daily_task_manager/briefs/
+daily_task_manager/reminders/
+daily_task_manager/daily_records/
+
+# Local config / secrets (keep *.example.json)
+.env
+*.key
+*.pem
+secrets.json
+config.local.json
+openclaw.json
+daily_task_manager/config/paths.json
+paths.json
+timed_reminders.json
+
+# Local launcher (copy from run.cmd.example)
+daily_task_manager/scripts/run.cmd
+
+# Personal / binary files
+*.xmind
+*.pdf
+*.docx
+*.xlsx
+*.jpg
+*.jpeg
+*.png
+*.heic
+*.raw
+*.cr2
+*.cr3
+*.nef
+*.arw
+*.dng
+*.tif
+*.tiff
+*.mp4
+*.mov
+
+# Personal task markdown (runtime)
+TASKS.md
+TODAY.md
+BACKLOG.md
+INBOX.md
+ENERGY_LOG.md
+SHOPPING.md
+RELATIONSHIPS.md
+WEEKLY_REVIEWS.md
+
+# Windows
+Thumbs.db
+desktop.ini
+ehthumbs.db
+*.stackdump
+
+# Cloud sync artifacts
+*.baiduyun.uploading.cfg
+*.uploading.cfg
+
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
