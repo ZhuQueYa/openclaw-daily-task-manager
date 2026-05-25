@@ -1,187 +1,228 @@
 # 安装指南
 
-本文档说明从零安装 Daily Task Manager 的完整步骤。假设你已克隆本仓库到本地。
+按下面做，大约 **5～10 分钟** 就能用上。全程只需关心 **3 个路径**，不用先搞懂项目目录结构。
 
-## 1. 克隆仓库
+---
 
-```powershell
-git clone <your-repo-url> openclaw-life-assistant-tools
-cd openclaw-life-assistant-tools
-```
+## 你需要准备
 
-## 2. 决定安装目录
+- **Windows 10/11**
+- **Python 3.10 或更高**（推荐 3.10 / 3.11 / 3.12）
+  - 从 [python.org](https://www.python.org/downloads/) 安装，勾选 **“Add python.exe to PATH”**
+  - 安装后验证：
+    ```powershell
+    python --version
+    ```
+    应显示 `Python 3.10.x` 或更高（如 `3.12.x`）。低于 3.10 请升级后再继续。
+  - 本项目**只用标准库**，不需要 `pip install` 任何第三方包
+- **OpenClaw** 已安装，gateway 能正常启动
+- 本仓库已克隆到本机
 
-你有两种部署方式：
+---
 
-| 方式 | 说明 |
-|------|------|
-| **A. 仓库内运行** | 直接在 `daily_task_manager/` 下配置，`PROJECT_ROOT` 指向该目录 |
-| **B. 分离部署** | 将 `daily_task_manager/` 复制到如 `C:\Users\YourName\daily_task_manager`，与 Git 仓库分离 |
+## 推荐安装（复制 → 运行 → 填路径 → 完成）
 
-推荐 **B**：运行数据与代码仓库分离，升级代码时不影响任务数据。
-
-```powershell
-# 方式 B 示例
-$ProjectRoot = "C:\Users\YourName\daily_task_manager"
-Copy-Item -Recurse -Force .\daily_task_manager\* $ProjectRoot
-cd $ProjectRoot
-```
-
-## 3. 创建 Python 虚拟环境
-
-项目仅使用 Python 标准库，无需 `pip install`。
+### 第 1 步：克隆仓库
 
 ```powershell
-python -m venv C:\Users\YourName\.venvs\life_assistant
-C:\Users\YourName\.venvs\life_assistant\Scripts\Activate.ps1
-python --version   # 建议 3.10+
+git clone https://github.com/ZhuQueYa/openclaw-daily-task-manager.git
+cd openclaw-daily-task-manager
 ```
 
-## 4. 复制 example 配置
+### 第 2 步：选定工具安装路径
 
-### 自动初始化（推荐）
+选一个你想长期放工具的文件夹，例如：
 
-在 `daily_task_manager` 目录（或你的 `$ProjectRoot`）执行：
+```
+C:\Users\你的用户名\daily_task_manager
+```
+
+下面用 `你的工具路径` 代替这个地址。
+
+> **建议：** 工具与 Git 仓库分开（复制 `daily_task_manager` 到上面路径）。也可以直接在仓库里的 `daily_task_manager` 目录安装，把 `你的工具路径` 写成该目录的完整路径即可。
+
+**若选择「复制到独立目录」：**
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\init.ps1 -ProjectRoot "C:\Users\YourName\daily_task_manager"
+$ToolPath = "C:\Users\你的用户名\daily_task_manager"
+Copy-Item -Recurse -Force .\daily_task_manager\* $ToolPath
 ```
 
-脚本会：
-
-- 创建 `data/life`、`data/taie`、`logs`、`backup` 等目录
-- 复制 `config/paths.example.json` → `config/paths.json`（若不存在）
-- 复制示例 Markdown / JSON 到 `data/`（若不存在）
-- 复制 `run.cmd.example` → `run.cmd`（若不存在）
-
-### 手动复制
+### 第 3 步：运行安装脚本（一键建目录和示例文件）
 
 ```powershell
-Copy-Item config\paths.example.json config\paths.json
-Copy-Item scripts\run.cmd.example scripts\run.cmd
-Copy-Item examples\sample_TASKS.md data\life\TASKS.md
-Copy-Item examples\sample_BACKLOG.md data\life\BACKLOG.md
+cd 你的工具路径
+powershell -ExecutionPolicy Bypass -File scripts\init.ps1 -ProjectRoot "你的工具路径"
 ```
 
-## 5. 修改 paths.json
+脚本会自动：
 
-用编辑器打开 `config/paths.json`，将所有 `C:\Users\YourName\daily_task_manager` 替换为你的实际 `$ProjectRoot`。
+- 创建 `data\life`、`data\reminders`、`logs` 等文件夹  
+- 生成 `config\paths.json`、`scripts\run.cmd`（从示例复制）  
+- 放入示例任务文件，方便马上试用  
 
-注意 JSON 中反斜杠需转义：`\\`
+### 第 4 步：只填 3 处路径
 
-```json
-{
-  "timezone": "Asia/Shanghai",
-  "root": "C:\\Users\\YourName\\daily_task_manager",
-  "life_dir": "C:\\Users\\YourName\\daily_task_manager\\data\\life",
-  ...
-}
-```
+#### ① 工具安装路径
 
-## 6. 修改 run.cmd
+**文件 A：** `config\paths.json`  
+把里面所有的 `C:\Users\YourName\daily_task_manager` 改成 `你的工具路径`。  
+JSON 里反斜杠要写成双反斜杠，例如：`C:\\Users\\你\\daily_task_manager`。
 
-编辑 `scripts/run.cmd`：
+**文件 B：** `scripts\run.cmd`  
+修改这一行：
 
 ```bat
-set "ROOT=C:\Users\YourName\daily_task_manager"
-set "PYTHON=C:\Users\YourName\.venvs\life_assistant\Scripts\python.exe"
+set "ROOT=你的工具路径"
 ```
 
-`run.cmd` 已在 `.gitignore` 中，不会误提交。
+#### ② Python 解释器路径（须为 3.10+）
 
-## 7. 初始化目录（若未用 init.ps1）
+仍在 `scripts\run.cmd`，修改：
 
-手动创建：
-
-```powershell
-$Root = "C:\Users\YourName\daily_task_manager"
-@(
-  "$Root\data\life",
-  "$Root\data\taie",
-  "$Root\data\archive\daily_done",
-  "$Root\data\reminders",
-  "$Root\logs",
-  "$Root\backup"
-) | ForEach-Object { New-Item -ItemType Directory -Force -Path $_ }
+```bat
+set "PYTHON=C:\Users\你的用户名\AppData\Local\Programs\Python\Python312\python.exe"
 ```
 
-## 8. 运行 check
+填写前确认版本：
 
 ```powershell
-cd C:\Users\YourName\daily_task_manager
+& "C:\...\python.exe" --version
+```
+
+须为 **3.10 及以上**。不确定安装位置时，执行 `where.exe python`，把输出贴到 `PYTHON=` 后面。  
+若你用虚拟环境，填虚拟环境里的 `python.exe` 即可（创建环境时也请用 3.10+：`python -m venv .venv`）。
+
+#### ③ 任务数据位置
+
+**通常不用单独配置。** `init` 已在 `你的工具路径\data\life\` 下建好 `TASKS.md`、`BACKLOG.md` 等。  
+只要 `paths.json` 里的路径都指向 `你的工具路径`，数据就会保存在这里。
+
+### 第 5 步：检查安装
+
+```powershell
 scripts\run.cmd check
 ```
 
-期望输出：
+看到 **`check_result: ok`** 表示工具侧就绪。
 
+### 第 6 步：安装 OpenClaw Skill
+
+把仓库里的 Skill 复制到 OpenClaw 加载目录（二选一，以你实际 OpenClaw 配置为准）：
+
+```powershell
+$RepoRoot = "克隆仓库的完整路径"   # 例如 E:\...\openclaw-daily-task-manager
+$SkillDst = "$env:USERPROFILE\.openclaw\plugin-skills\daily-task-manager"
+
+New-Item -ItemType Directory -Force -Path $SkillDst | Out-Null
+Copy-Item -Path "$RepoRoot\daily-task-manager\*" -Destination $SkillDst -Recurse -Force
 ```
-check_result: ok
+
+用记事本或编辑器打开 **`$SkillDst\SKILL.md`**，把文中所有 `<PROJECT_ROOT>` 替换成 **`你的工具路径`**（与 `run.cmd` 里 `ROOT` 一致）。
+
+### 第 7 步：重启 OpenClaw
+
+```powershell
+openclaw gateway restart
 ```
 
-若失败，会列出 `missing` 项。常见原因：
+或在 OpenClaw 管理界面重启 gateway。
 
-- `paths.json` 路径未改全
-- `data/life/TASKS.md` 等文件不存在 → 从 `examples/` 复制
-- `TAIE.xmind` 不存在 → 可选；没有时 `taie-red` 会失败，但不影响其他命令
+### 第 8 步：对话试一句
 
-JSON 模式：
+在 OpenClaw 里说：
+
+> 检查一下任务系统
+
+应返回检查通过。再说：
+
+> 记一下：安装测试任务
+
+> 今天我应该先做什么？
+
+能正常回复，即安装完成。
+
+---
+
+## 安装完成后你会得到什么
+
+| 位置 | 作用 |
+|------|------|
+| `你的工具路径\data\life\` | 任务 Markdown（TASKS、TODAY、BACKLOG 等） |
+| `你的工具路径\data\reminders\` | 定时提醒数据 |
+| `你的工具路径\config\paths.json` | 本机路径配置（勿提交 Git） |
+| OpenClaw Skill 目录 | Agent 如何理解你的话并调用工具 |
+
+日常使用：**只和 OpenClaw 说话**，不必手动编辑这些文件。
+
+---
+
+## 手动安装（不用 init 脚本时）
+
+适合想完全自己掌控每一步的用户。
+
+1. 创建 `你的工具路径`，把仓库中 `daily_task_manager` 下的 `app`、`config`、`scripts`、`examples` 复制过去。  
+2. 手动创建文件夹：`data\life`、`data\taie`、`data\archive\daily_done`、`data\reminders`、`logs`、`backup`。  
+3. 复制 `config\paths.example.json` → `config\paths.json`，并改好所有路径。  
+4. 复制 `scripts\run.cmd.example` → `scripts\run.cmd`，设置 `ROOT` 和 `PYTHON`。  
+5. 从 `examples\` 复制 `sample_TASKS.md` → `data\life\TASKS.md`，`sample_BACKLOG.md` → `BACKLOG.md`（`TODAY.md` 可选）。  
+6. 执行 `scripts\run.cmd check`。  
+7. 按上文「第 6～8 步」同步 Skill 并重启 gateway。
+
+---
+
+## 故障排查
+
+### Python 版本过低或找不到
+
+| 现象 | 处理 |
+|------|------|
+| `python --version` 显示 3.9 或更低 | 安装 [Python 3.10+](https://www.python.org/downloads/)，并更新 `run.cmd` 里的 `PYTHON=` |
+| `'python' 不是内部或外部命令` | 重装 Python 并勾选 “Add to PATH”，或直接在 `run.cmd` 写 `python.exe` 的完整路径 |
+
+### `check_result: failed`
+
+| 可能原因 | 处理 |
+|---------|------|
+| `paths.json` 路径写错或未改成你的用户名 | 全文搜索 `YourName`，全部替换；注意 `\\` |
+| `data\life\TASKS.md` 不存在 | 重新运行 `init.ps1`，或从 `examples\` 手动复制 |
+| `run.cmd` 里 `PYTHON` 指向错误 | `where.exe python` 核对路径 |
+| 在错误目录执行 `run.cmd` | 应在 `你的工具路径` 下执行，或写绝对路径 |
+
+查看详情：
 
 ```powershell
 scripts\run.cmd check --json
 ```
 
-## 9. 同步 Skill 到 OpenClaw
+### OpenClaw 不调用命令、直接改文件
 
-见 [SKILL_SYNC.md](SKILL_SYNC.md)。
+- Skill 是否复制到正确目录（见 [SKILL_SYNC.md](SKILL_SYNC.md)）  
+- `SKILL.md` 里是否还有未替换的 `<PROJECT_ROOT>`  
+- 是否已 **重启 gateway**  
+- 是否有其他 Skill 与任务管理冲突  
 
-简要步骤：
+### `taie-red` 失败
 
-```powershell
-$RepoRoot = "C:\path\to\openclaw-life-assistant-tools"
-$SkillDst = "$env:USERPROFILE\.openclaw\plugin-skills\daily-task-manager"
-New-Item -ItemType Directory -Force -Path $SkillDst | Out-Null
-Copy-Item -Path "$RepoRoot\daily-task-manager\*" -Destination $SkillDst -Recurse -Force
-```
+可选功能。确认 `data\taie\TAIE.xmind` 存在；没有脑图可忽略，不影响记任务和今日计划。
 
-同步后编辑 `$SkillDst\SKILL.md`，将所有 `<PROJECT_ROOT>` 替换为你的实际路径。
+### 定时提醒不响
 
-## 10. 重启 OpenClaw gateway
+记录任务时需带**明确钟点**；Skill 会根据结果创建 OpenClaw cron。详见 [daily-task-manager/REMINDERS.md](../daily-task-manager/REMINDERS.md)。
 
-重启方式取决于你的 OpenClaw 安装。常见：
+### 中文乱码
 
-```powershell
-# 若使用 openclaw CLI
-openclaw gateway restart
-```
+始终通过 `scripts\run.cmd` 调用；PowerShell 终端建议 UTF-8（`chcp 65001`）。
 
-或在 OpenClaw 管理界面重启 gateway 服务。
+### `git push` 报 `Could not resolve host: github.com`
 
-## 11. 测试常用命令
+这是网络/DNS 无法访问 GitHub，与安装无关。换网络、改 DNS 或配置代理后再推送。本地 `commit` 成功后，网络恢复再执行 `git push` 即可。
 
-```powershell
-# 记录任务
-scripts\run.cmd capture --text "测试：明天整理文档" --json
-
-# 今日计划
-scripts\run.cmd today --json
-
-# 列出未完成任务
-scripts\run.cmd list-tasks --scope unfinished --json
-
-# 完成（用关键词匹配）
-scripts\run.cmd done --text "文档" --json
-
-# 备份
-scripts\run.cmd backup --json
-```
-
-在 OpenClaw 对话中测试：
-
-- 「今天做什么」→ 应触发 `today --json`
-- 「记一下：下周买打印机」→ 应触发 `capture --json`
+---
 
 ## 下一步
 
-- 放置你的 `data/taie/TAIE.xmind`（若有）
-- 阅读 [daily_task_manager/README.md](../daily_task_manager/README.md) 了解 capture 分类与定时提醒
-- 阅读 [daily-task-manager/REMINDERS.md](../daily-task-manager/REMINDERS.md) 了解 cron 配置
+- 在 OpenClaw 里按 [README 示例](../README.md#3-个最常用例子) 试用  
+- 更新 Skill 时见 [SKILL_SYNC.md](SKILL_SYNC.md)  
+- 需要完整命令列表时见 [daily_task_manager/README.md](../daily_task_manager/README.md)  
+- 可选：把 TAIE 脑图放到 `data\taie\TAIE.xmind`

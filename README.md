@@ -1,229 +1,176 @@
-# OpenClaw Life Assistant — Daily Task Manager
+# OpenClaw 日常任务管理 Skill
 
-面向 **OpenClaw** 的 Windows 日常任务管理工具包：Python CLI 负责确定性文件读写，OpenClaw Skill 负责识别用户意图并调用 CLI。
+**用对话管任务，不用自己改文件。** 装好后，对 OpenClaw 说「记一下」「今天做什么」「做完了」就行。
 
-> **本仓库只包含代码、Skill 模板与示例配置。** 不包含你的真实任务数据、日志、归档、照片或 TAIE 脑图。使用前请复制 example 配置并修改本机路径。
+**环境要求：** Windows 10/11 · **Python 3.10 或更高** · 已安装 OpenClaw（工具仅用 Python 标准库，无需 `pip install`）
 
-## 项目简介
+---
 
-Daily Task Manager 是一套「低压力、Markdown 驱动」的个人任务系统，专为与 OpenClaw Agent 配合而设计：
+## 为什么需要它
 
-- **Python 工具**（`daily_task_manager/`）：捕获任务、生成今日计划、日切、归档、读取 TAIE 红旗、管理定时提醒 JSON
-- **OpenClaw Skill**（`daily-task-manager/`）：告诉 Agent 何时调用哪条 CLI 命令，禁止 Agent 直接手改任务文件
+| 你可能遇到过 | 这个 Skill 的做法 |
+|-------------|------------------|
+| 任务记在聊天、便签、脑图里，到处找 | 统一进本地 Markdown，OpenClaw 只通过命令读写 |
+| Agent 直接改 `TASKS.md`，改乱或改丢 | **禁止手改文件**，所有变更走固定命令，结果可核对 |
+| 每天早上不知道先做哪件 | `today` 突出 1～3 件 + 一句「下一步」 |
+| 口头说「三点提醒我」容易忘 | 记任务时写入提醒，Skill 帮你对接 OpenClaw 定时 |
 
-## 解决什么问题
+你不需要懂 Python、目录结构或 CLI 参数——**OpenClaw 加载 Skill 后，用自然语言即可。**
 
-| 痛点 | 本项目的做法 |
-|------|-------------|
-| Agent 直接改 Markdown 不可控 | 所有变更经 CLI，输出结构化 JSON |
-| 任务散落多处 | 统一 `TASKS.md` / `BACKLOG.md` + `paths.json` |
-| 今日计划信息过载 | `today` 突出 1–3 项 + `next_step` |
-| TAIE 脑图与任务池脱节 | `today` 双向同步 TAIE 红旗 |
-| 明确钟点提醒 | `capture` 写入 JSON，Skill 创建 OpenClaw cron |
+---
 
-## 主要功能
+## 它能做什么
 
-- **任务捕获** `capture`：按自然语言分类到 Today / Tomorrow / Scheduled / Backlog 等
-- **今日计划** `today`：生成 `TODAY.md`，同步 TAIE 红旗
-- **任务查询** `list-tasks`：按 scope 列出未完成任务
-- **完成归档** `done`：移出 TASKS 并写入 `daily_done`
-- **日切** `rollover`：Tomorrow → Today，Scheduled 过期 → Overdue
-- **定时提醒** `timed_reminders.json` + OpenClaw cron + `fire-reminder`
-- **TAIE 读取** `taie-red`：从 `.xmind` 读取红旗任务
-- **健康检查** `check` / **备份** `backup`
+- **记任务**：一句话丢进来，自动分到今天 / 明天 / 待办 / 排期等
+- **今日计划**：生成「今天先做啥」，信息克制、不刷屏
+- **查任务**：今天、本周未完成、Backlog 等，按你说的范围列
+- **完成任务**：说关键词就能标记完成并归档
+- **日切与备份**：明天的事滚到今天；睡前可备份
+- **定时提醒**（可选）：说了具体钟点，会走提醒流程
+- **TAIE 脑图联动**（可选）：和 XMind 里的红旗任务同步
 
-## 项目结构
+数据都在你本机，**不会**随 Git 上传（见 [隐私说明](#隐私说明)）。
 
-```
-openclaw-life-assistant-tools/
-├── README.md                    # 本文件
-├── .gitignore
-├── docs/
-│   ├── INSTALL.md               # 详细安装步骤
-│   ├── SKILL_SYNC.md            # Skill 同步到 OpenClaw
-│   └── PROJECT_STRUCTURE.md     # 目录说明
-├── daily-task-manager/          # OpenClaw Skill 源文件
-│   ├── SKILL.md
-│   └── REMINDERS.md
-└── daily_task_manager/          # Python CLI 工具
-    ├── app/                     # Python 模块
-    ├── config/
-    │   └── paths.example.json   # 复制为 paths.json 后使用
-    ├── examples/                # 示例 Markdown / JSON
-    ├── scripts/
-    │   ├── run.cmd.example      # 复制为 run.cmd 后使用
-    │   └── init.ps1             # 首次初始化脚本
-    └── README.md                # CLI 命令参考
-```
+---
 
-运行时目录（**不提交 GitHub**，见 `.gitignore`）：
+## 30 秒快速安装
+
+> 详细步骤、手动安装和排错见 **[安装指南](docs/INSTALL.md)**。
+
+**环境：** Windows 10/11 · **Python 3.10+**（安装后运行 `python --version` 确认）· 已安装 OpenClaw
 
 ```
-<PROJECT_ROOT>/
-├── config/paths.json            # 本机真实配置
-├── data/life/*.md               # 任务 Markdown
-├── data/taie/TAIE.xmind         # 可选脑图
-├── data/reminders/              # timed_reminders.json
-├── data/archive/daily_done/     # 完成归档
-├── logs/
-└── backup/
+复制命令 → 运行安装脚本 → 填 3 处路径 → 同步 Skill → 完成
 ```
-
-## 环境要求
-
-- **操作系统：** Windows 10/11
-- **Python：** 3.10+（仅标准库，无第三方依赖）
-- **OpenClaw：** 已安装并可运行 gateway（用于 Skill 与 cron 提醒）
-- **可选：** XMind 格式的 TAIE 脑图
-
-## 快速安装
-
-详细步骤见 [docs/INSTALL.md](docs/INSTALL.md)。
 
 ```powershell
-# 1. 克隆仓库
-git clone <your-repo-url> openclaw-life-assistant-tools
-cd openclaw-life-assistant-tools
+# 1. 克隆
+git clone https://github.com/ZhuQueYa/openclaw-daily-task-manager.git
+cd openclaw-daily-task-manager
 
-# 2. 选择安装目录（可与仓库分离，也可直接用仓库内 daily_task_manager）
-$ProjectRoot = "C:\Users\YourName\daily_task_manager"
+# 2. 一键初始化（把路径改成你的）
+powershell -ExecutionPolicy Bypass -File daily_task_manager\scripts\init.ps1 -ProjectRoot "C:\Users\你的用户名\daily_task_manager"
 
-# 3. 复制工具文件到安装目录（若分离部署）
-# 或直接在仓库内 daily_task_manager 目录操作
+# 3. 填路径（见下方「只需配置 3 处」）
 
-# 4. 创建虚拟环境并安装（无 requirements.txt，标准库即可）
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-
-# 5. 初始化目录与示例配置
-cd daily_task_manager
-powershell -ExecutionPolicy Bypass -File scripts\init.ps1 -ProjectRoot $ProjectRoot
-
-# 6. 编辑 config\paths.json 与 scripts\run.cmd
-
-# 7. 健康检查
-scripts\run.cmd check
+# 4. 检查是否就绪
+C:\Users\你的用户名\daily_task_manager\scripts\run.cmd check
 ```
 
-## 配置步骤
+**只需配置 3 处：**
 
-1. 复制 `config/paths.example.json` → `config/paths.json`
-2. 将所有路径改为你的 `<PROJECT_ROOT>`（Windows 反斜杠需写成 `\\`）
-3. 复制 `scripts/run.cmd.example` → `scripts/run.cmd`，设置 `ROOT` 与 `PYTHON`
-4. 可选：将 `examples/sample_*.md` 复制到 `data/life/` 作为起点
-5. 可选：放置 `data/taie/TAIE.xmind`
-6. 运行 `scripts\run.cmd check` 确认路径正确
+| 配置什么 | 填在哪里 | 示例 |
+|---------|---------|------|
+| 工具安装路径 | `config\paths.json` 里所有路径、`scripts\run.cmd` 的 `ROOT` | `C:\Users\你\daily_task_manager` |
+| 任务数据位置 | 一般与工具同目录下的 `data\life\`（`init` 已建好） | 同上，无需单独选文件夹 |
+| OpenClaw Skill 目录 | 把 `daily-task-manager\` 复制到 OpenClaw 的 Skill 目录，并改 `SKILL.md` 里的路径 | `%USERPROFILE%\.openclaw\plugin-skills\daily-task-manager` |
 
-## OpenClaw Skill 安装 / 同步
+同步 Skill 后**重启 OpenClaw gateway**。看到 `check_result: ok` 就可以开始用。
 
-Skill 源文件在 `daily-task-manager/`。同步到 OpenClaw 后，**必须**把 `SKILL.md` 里的 `<PROJECT_ROOT>` 替换为本机路径。
+---
 
-详见 [docs/SKILL_SYNC.md](docs/SKILL_SYNC.md)。
+## 3 个最常用例子
 
-```powershell
-# 示例：复制到 plugin-skills
-$Src = ".\daily-task-manager"
-$Dst = "$env:USERPROFILE\.openclaw\plugin-skills\daily-task-manager"
-New-Item -ItemType Directory -Force -Path $Dst | Out-Null
-Copy-Item -Path "$Src\*" -Destination $Dst -Recurse -Force
-# 然后重启 OpenClaw gateway
-```
+### 1. 记一条带时间的任务
 
-## Python 工具如何运行
+**你说：**
 
-**唯一入口：**
+> 帮我记录一个明天下午三点提交材料的任务
 
-```bat
-<PROJECT_ROOT>\scripts\run.cmd <命令> [参数] [--json]
-```
+**OpenClaw 会：** 调用「记录任务」，把你的原话写进任务池；若有明确钟点，会按 Skill 规则处理提醒。
 
-- Python 代码只读 `config/paths.json`，不写死业务路径
-- 默认输出简洁文本；加 `--json` 得结构化结果
-- Markdown 使用 UTF-8 BOM（`utf-8-sig`），避免 PowerShell 乱码
+**你会得到：** 任务已记下，属于明天/排期；需要时会提示是否设提醒。
 
-OpenClaw Agent **不应**直接编辑 `data/life/*.md`，应通过 Skill 调用上述命令。
+---
 
-## 常用命令示例
+### 2. 今天先做什么
 
-```bat
-scripts\run.cmd check
-scripts\run.cmd capture --text "明天整理周报" --json
-scripts\run.cmd today --json
-scripts\run.cmd list-tasks --scope unfinished --json
-scripts\run.cmd done --text "周报" --json
-scripts\run.cmd rollover --json
-scripts\run.cmd taie-red --json
-scripts\run.cmd backup --json
-scripts\run.cmd list-reminders --json
-```
+**你说：**
 
-**推荐工作流：**
+> 今天我应该先做什么？
 
-1. 早晨：`rollover` → `today` → 告知用户 `next_step`
-2. 随时：`capture --text "..."`  
-3. 完成：`done --text "关键词"`
-4. 睡前：`backup`
+**OpenClaw 会：** 必要时先做日切，再生成今日计划。
 
-完整命令说明见 [daily_task_manager/README.md](daily_task_manager/README.md)。
+**你会得到：** 1～3 件重点 + 一句建议的「下一步」，而不是整页任务清单。
 
-## 数据和隐私说明
+---
 
-| 类型 | 是否包含在本仓库 |
-|------|-----------------|
-| Python 源码 | ✅ 包含 |
-| Skill 模板 | ✅ 包含 |
-| 示例配置 / 示例 Markdown | ✅ 包含 |
-| 真实 `paths.json` | ❌ 已 `.gitignore` |
-| 真实 `TASKS.md` / `TODAY.md` / `BACKLOG.md` 等 | ❌ 已 `.gitignore` |
-| `timed_reminders.json` | ❌ 已 `.gitignore` |
-| 日志 / 备份 / 归档 | ❌ 已 `.gitignore` |
-| `TAIE.xmind` 及个人文件 | ❌ 已 `.gitignore` |
-| Token / webhook / 密码 | ❌ 不应出现在仓库中 |
+### 3. 完成 / 查看任务
 
-所有个人运行数据保留在你本机 `<PROJECT_ROOT>`，不会随 Git 上传。
+**你说：**
 
-## 本机路径配置
+> 把这个任务标记为完成  
+> 查看本周还没完成的任务
 
-以下文件含本机路径，**不应提交**，请使用 example 版本：
+**OpenClaw 会：** 用关键词匹配完成并归档；或按范围列出未完成任务。
 
-| 文件 | 说明 |
-|------|------|
-| `config/paths.json` | 从 `paths.example.json` 复制 |
-| `scripts/run.cmd` | 从 `run.cmd.example` 复制 |
-| `daily-task-manager/SKILL.md`（同步后） | 将 `<PROJECT_ROOT>` 替换为实际路径 |
+**你会得到：** 完成确认，或一份按你要求筛选的列表（来自真实文件，不是 Agent 凭记忆编造）。
 
-## 故障排查
+---
 
-| 现象 | 检查 |
-|------|------|
-| `check_result: failed` | 编辑 `paths.json`，确认目录存在；运行 `init.ps1` |
-| `taie_read_result: failed` | 确认 `TAIE.xmind` 路径正确且文件存在 |
-| Skill 不触发 CLI | 确认 Skill 已同步、gateway 已重启、路径已替换 |
-| 定时提醒不响 | 确认 `capture --json` 中 `cron_required: true` 后 Skill 已创建 cron |
-| 中文乱码 | 使用 `run.cmd` 入口；终端设为 UTF-8 |
-| `python` 找不到 | 在 `run.cmd` 中写虚拟环境完整路径 |
+## OpenClaw 怎么使用它
 
-## 适合人群
+1. **安装并同步 Skill**（见 [docs/INSTALL.md](docs/INSTALL.md)）
+2. **重启 gateway**，确保 Skill 已加载
+3. **像和同事说话一样**下指令即可，例如：
 
-- 已在用 **OpenClaw** 作为日常助手，希望任务管理「可控、可审计」
-- 偏好 **Markdown + 本地文件**，不想引入数据库
-- 使用 **TAIE / XMind** 管理长期目标，需要与今日任务池联动
-- 接受 **Windows + Python 标准库** 技术栈
+| 你可以这样说 | Skill 大致会做的事 |
+|-------------|-------------------|
+| 记一下：下周买打印机 | 记录任务 |
+| 今天做什么 / 我上班了 | 日切 + 今日计划 |
+| 还有什么没做 | 列出未完成任务 |
+| 做完了，周报那个 | 标记完成 |
+| 提醒我三点开会 | 记录 + 定时提醒流程 |
+| 检查一下任务系统 | 健康检查 |
 
-## 后续计划
+**你不需要：** 自己打开 `TASKS.md` 编辑、记 CLI 命令、了解 `app/` 里有哪些模块。
 
-- [ ] 更多 Life Assistant 工具（新闻、英语、摄影等）统一发布
-- [ ] 提供 `topics.json` 等扩展配置示例
-- [ ] Linux/macOS 启动脚本（当前以 Windows 为主）
-- [ ] 一键 Skill 同步脚本
+**建议每天：** 早上问「今天做什么」→ 随时「记一下」→ 完成时说「做完了」→ 睡前可说「备份一下」。
 
-## 相关文档
+---
 
-- [docs/INSTALL.md](docs/INSTALL.md) — 逐步安装
-- [docs/SKILL_SYNC.md](docs/SKILL_SYNC.md) — Skill 同步与验证
-- [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) — 目录与忽略规则
-- [daily_task_manager/README.md](daily_task_manager/README.md) — CLI 命令参考
+## 常见问题
+
+**需要哪个 Python 版本？**  
+**3.10 或更高**（3.11、3.12 均可）。运行 `python --version` 确认；只需标准库，不用装额外依赖。
+
+**装完以后 OpenClaw 没反应？**  
+确认 Skill 已复制到 OpenClaw 目录、`SKILL.md` 里的路径已改成你的安装路径，并已重启 gateway。见 [Skill 同步](docs/SKILL_SYNC.md)。
+
+**`check` 失败？**  
+多半是 `paths.json` 或 `run.cmd` 里的路径没改对。运行 `init.ps1` 后把里面的 `YourName` 全部换成你的用户名。见 [安装指南 · 故障排查](docs/INSTALL.md#故障排查)。
+
+**Agent 还是直接改了我的 Markdown？**  
+说明 Skill 未生效或被别的 Skill 覆盖。以本仓库的 `daily-task-manager/SKILL.md` 为准，并确保 gateway 加载的是最新副本。
+
+**没有 TAIE 脑图能用吗？**  
+可以。脑图是可选的；没有时只是「红旗同步」相关功能不可用，记任务、今日计划、提醒等照常。
+
+**能用在 Mac / Linux 吗？**  
+当前以 Windows 为主；其他系统见后续计划或 [CLI 参考](daily_task_manager/README.md)。
+
+**Git push 失败、访问不了 GitHub？**  
+这是网络/DNS 问题，与 Skill 无关。先保证本机能打开 [github.com](https://github.com)。
+
+---
+
+## 隐私说明
+
+本仓库**只含** Skill 与工具代码、示例配置。**不含**你的真实任务、日志、脑图或提醒数据——这些留在本机安装目录，已在 `.gitignore` 中排除。
+
+---
+
+## 想了解更多
+
+| 文档 | 适合什么时候看 |
+|------|----------------|
+| [docs/INSTALL.md](docs/INSTALL.md) | 第一次安装、换电脑 |
+| [docs/SKILL_SYNC.md](docs/SKILL_SYNC.md) | 更新 Skill、路径替换 |
+| [daily_task_manager/README.md](daily_task_manager/README.md) | 需要查完整 CLI 命令 |
+| [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) | 想了解目录与实现 |
+
+---
 
 ## 许可证
 
-发布前请自行添加 LICENSE 文件（当前仓库未包含）。
+仓库尚未包含 LICENSE；开源发布前请自行添加。
